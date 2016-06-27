@@ -1,3 +1,6 @@
+// 大二下小学期.cpp : 定义控制台应用程序的入口点。
+//
+
 #include "stdafx.h"
 #include "Information database.h"
 #include "opereat.h"
@@ -41,6 +44,22 @@ int _tmain(int argc, _TCHAR* argv[])
 			{
 				ope.Salesprocess(inf);
 				ope.output2();
+			}
+			if(y==3)
+			{
+				ope.addin(inf);
+				ope.output1();
+				ope.output2();
+			}
+			if(y==4)
+			{
+				ope.addin(inf);
+				ope.output2();
+			}
+			if(y==5)
+			{
+				ope.Salesprocess(inf);
+				ope.outputpromotion ();
 			}
 		}
 	}while(x!=3);	
@@ -87,12 +106,15 @@ int mainmenuope()
 	cout<<"        ****************************"<<endl;
 	cout<<"        **  1、商品销售           **"<<endl;
 	cout<<"        **  2、折价销售           **"<<endl;
-	cout<<"        **  3、退出               **"<<endl;
+	cout<<"        **  3、扫码销售           **"<<endl;
+	cout<<"        **  4、扫码折价销售       **"<<endl;
+	cout<<"        **  5、促销               **"<<endl;
+	cout<<"        **  6、退出               **"<<endl;
 	cout<<"        ****************************"<<endl;
 	cout<<"            请选择：";
 	cin>>i;
 	system("Cls");
-	}while(i<1&&i>3);
+	}while(i<1&&i>6);
 	return i;
 }
 
@@ -100,7 +122,6 @@ int mainmenuope()
 
 
 
-class Information类
 #include "stdafx.h"
 #include"iostream"
 #include "fstream"
@@ -295,10 +316,19 @@ void Information::read()
 
 
 
+
+
+
+
 #include "stdafx.h"
 #include "Information database.h"
+#include<stdlib.h>
+#include <stdio.h> 
 #include"iostream"
 #include "fstream"
+#include <time.h>
+
+
 #define MAX 50
 #pragma once
 
@@ -323,13 +353,22 @@ public:
 		num=0;
 		totalprice=0; 
 		totaldiscout=0;
+		for(int i=0;i<MAX;i++)
+		{
+			prices[i]=discounts[i]=0;
+			number[i]=0;
+		}
+
 	}
 	int search(Information &jia,char barcodex[10]);
 	void input(Information &jia,char barcodex[10],int number);
+	void input(Information &jia,char barcodex[10]);//新增重载函数
 	void output1();
 	void output2();
+	void outputpromotion();//新增促销销售
 	void total();
     void Salesprocess(Information &jia);
+	void addin(Information &inf);//新增输入单个条码卖贷过程
 };
 int opereat::search(Information &jia,char barcodex[10])
 {
@@ -344,8 +383,41 @@ void opereat::input(Information &jia,char barcodex[10],int numberx)
 	number[num]=numberx;
 	num++;
 }
+void opereat::input(Information &jia,char barcodex[10])
+{
+	int flag=0;
+	jia.returninformation(barcodex,name[num],unit[num],price[num],discount[num]);
+	for(int i=0;i<num;i++)
+	{
+		if(!strcmp(barcode[i],barcodex))
+		{
+			number[i]+=1;
+			prices[i]+=price[i];
+			discounts[i]+=discount[i];
+			flag=1;
+			break;
+		}
+	}
+	if(flag==0)
+	{
+		strcpy(barcode[num],barcodex);
+		prices[num]=price[num];
+		discounts[num]=discount[num];
+		number[num]=1;
+		num++;
+	}
+}
+
 void opereat::output1()
 {
+	cout<<endl;
+	cout<<"打印时间：";
+	time_t t = time(0); 
+    char tmp[64]; 
+    strftime( tmp, sizeof(tmp), "%Y年%m月%d日 %X ",localtime(&t) ); 
+    puts( tmp ); 
+	
+
 	cout<<"************************商品购物清单******************"<<endl;
 	for(int i=0;i<num;i++)
 	{
@@ -400,6 +472,59 @@ void opereat::output2()
 	totalprice=0; 
 	totaldiscout=0;
 }
+void opereat::outputpromotion()
+{
+	cout<<endl;
+	cout<<"************************商品购物清单******************"<<endl;
+	cout<<"打印时间：";
+	time_t t = time(0); 
+    char tmp[64]; 
+    strftime( tmp, sizeof(tmp), "%Y年%m月%d日 %X ",localtime(&t) ); 
+    puts( tmp ); 
+	
+	for(int i=0;i<num;i++)
+	{
+		cout<<"名称：";
+		printf("%s",name[i]);
+		cout<<"   ";
+		cout<<"数量：";
+	    cout<<number[i];
+		printf("%s",unit[i]);
+		cout<<"   ";
+		cout<<"单价：";
+		cout<<price[i];
+	    cout<<"(元)";
+		cout<<"   ";
+		cout<<"小计：";
+		cout<<prices[i];
+		cout<<"(元)"<<endl;
+	}
+	cout<<"----------------------"<<endl;
+	cout<<"挥泪赠送商品："<<endl;
+	totaldiscout=0;
+	for(int i=0;i<num;i++)
+	{
+		if(number[i]>1)
+		{
+			cout<<"名称：";
+			printf("%s",name[i]);
+			cout<<"   ";
+			cout<<"数量：";
+			cout<<number[i]/2;
+			printf("%s",unit[i]);
+			cout<<"   ";
+			totaldiscout+=price[i]*(number[i]/2);
+			cout<<endl;
+		}
+	}
+	cout<<"总计：";
+	cout<<totalprice<<" (元)"<<endl;
+	cout<<"节省：";
+	cout<<totaldiscout<<" (元)"<<endl;
+	num=0;
+	totalprice=0; 
+	totaldiscout=0;
+}
 void opereat::total()
 {
 	for(int i=0;i<num;i++)
@@ -427,6 +552,26 @@ void opereat::Salesprocess(Information &inf)
 		cout<<"请输入购买数量：";
 		cin>>numble;
 		input(inf,barcode,numble);
+	}while(1);
+	total();
+}
+void opereat:: addin(Information &inf)
+{
+	char barcode[MAX];
+	int numble;
+	cout<<"请根据输入提示，输入结算信息（商品码为0时输入结束）"<<endl;
+	do
+	{
+		cout<<"请输入商品码：";
+		scanf("%s",barcode);
+		if(!strcmp(barcode,"0"))
+			break;
+		if(!search(inf,barcode))
+		{
+			cout<<"当前商品不存在，请重新输入！"<<endl;
+			continue;
+		}
+		input(inf,barcode);
 	}while(1);
 	total();
 }
